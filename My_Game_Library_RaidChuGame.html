@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6d45d8">
+  <title>My Game Library — คลังเกมส่วนตัว</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f5ff; --surface: #fff; --surface-soft: #f0ebff; --ink: #21183d;
+      --muted: #817a99; --purple: #7048df; --purple-dark: #4f2aa8; --purple-light: #a992ff;
+      --line: #e9e3f7; --danger: #dc456a; --shadow: 0 14px 40px rgba(73, 45, 139, .09);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background:
+      radial-gradient(circle at 92% 16%, rgba(187, 164, 255, .16), transparent 24rem),
+      radial-gradient(ellipse at 8% 0%, #eee7ff 0, transparent 33%), var(--bg);
+      font-family: "Prompt", sans-serif; min-height: 100vh; }
+    body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .24;
+      background-image: radial-gradient(#b6a1ed 0.7px, transparent 0.7px); background-size: 23px 23px;
+      mask-image: linear-gradient(to bottom, black, transparent 75%); }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .app-shell { max-width: 1200px; margin: 0 auto; padding: 28px 26px 52px; animation: pageIn .45s ease both; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .brand-icon { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 17px; color: #fff; background: linear-gradient(145deg, #9777ff, #5b35c6); box-shadow: 0 9px 20px #7550dc44; flex-shrink: 0; }
+    .brand-icon svg { width: 27px; height: 27px; }
+    .brand h1 { margin: 0; font-family: "Kanit", sans-serif; font-size: clamp(21px, 3vw, 29px); line-height: 1.15; letter-spacing: -.4px; }
+    .brand p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .top-pill { display: flex; align-items: center; gap: 7px; border: 1px solid #dfd5ff; background: #fff9; color: #6844c2; border-radius: 999px; padding: 9px 14px; font-size: 12px; white-space: nowrap; }
+    .top-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #45bd87; box-shadow: 0 0 0 4px #45bd871c; }
+    .hero { position: relative; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 190px; padding: 31px 34px; border-radius: 27px; color: #fff; background: linear-gradient(115deg, #4e2aa5 0%, #7048d8 58%, #9879f8 100%); box-shadow: 0 18px 38px #6740c52b; }
+    .hero::before, .hero::after { content: ""; position: absolute; border: 1px solid #ffffff1e; border-radius: 50%; pointer-events: none; }
+    .hero::before { animation: orbitDrift 12s ease-in-out infinite alternate; }
+    .hero-copy::after { content: ""; display: block; position: absolute; width: 110px; height: 2px; left: 0; bottom: -20px;
+      border-radius: 4px; background: linear-gradient(90deg, #ffffffa8, #ffffff00); }
+    .hero-art { animation: gentleFloat 5s ease-in-out infinite; }
+    .hero-art::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; border: 1px solid #ffffff30; }
+    .hero::before { width: 270px; height: 270px; right: 55px; top: -150px; }
+    .hero::after { width: 360px; height: 360px; right: -80px; bottom: -270px; }
+    .hero-copy { position: relative; z-index: 1; max-width: 600px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; margin-bottom: 12px; border-radius: 8px; background: #ffffff20; color: #f0eaff; font-size: 11px; letter-spacing: .4px; }
+    .hero h2 { margin: 0 0 8px; font-family: "Kanit", sans-serif; font-size: clamp(25px, 4vw, 35px); line-height: 1.2; font-weight: 600; }
+    .hero p { margin: 0; color: #e9e0ff; font-size: 13px; line-height: 1.8; }
+    .hero-art { position: relative; z-index: 1; display: grid; place-items: center; width: 130px; height: 130px; margin-right: 28px; flex-shrink: 0; border-radius: 35px; transform: rotate(8deg); background: linear-gradient(145deg, #ffffff36, #ffffff12); border: 1px solid #ffffff42; box-shadow: inset 0 1px 0 #ffffff40, 0 20px 35px #39207835; }
+    .hero-art svg { width: 75px; height: 75px; filter: drop-shadow(0 7px 8px #35207866); }
+    .stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin: 20px 0 25px; }
+    .stat-card { position: relative; overflow: hidden; display: flex; align-items: center; gap: 13px; padding: 17px 19px; background: var(--surface); border: 1px solid #eee8fa; border-radius: 18px; box-shadow: 0 6px 20px #4c2a8a08; transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+    .stat-card::after { content: ""; position: absolute; width: 72px; height: 72px; right: -35px; bottom: -42px; border-radius: 50%; background: #eee7ff; opacity: .7; transition: transform .25s ease; }
+    .stat-card:hover { transform: translateY(-3px); border-color: #d9cdfa; box-shadow: 0 12px 26px #4c2a8a10; }
+    .stat-card:hover::after { transform: scale(1.35); }
+    .stat-icon { width: 43px; height: 43px; display: grid; place-items: center; border-radius: 14px; background: var(--surface-soft); color: var(--purple); flex-shrink: 0; }
+    .stat-icon svg { width: 21px; height: 21px; }
+    .stat-label { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
+    .stat-number { font-family: "Kanit", sans-serif; font-weight: 600; font-size: 25px; line-height: 1.1; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin: 0 0 16px; }
+    .section-head h2 { font-family: "Kanit", sans-serif; margin: 0; font-size: 23px; font-weight: 600; }
+    .section-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; padding: 11px 17px; font-weight: 500; font-size: 13px; transition: transform .18s, box-shadow .18s, background .18s; }
+    .btn:hover { transform: translateY(-2px); }\n    .btn:active { transform: translateY(0) scale(.98); }\n    .btn:focus-visible, .icon-btn:focus-visible, .close-btn:focus-visible { outline: 3px solid #b9a4ff; outline-offset: 3px; }
+    .btn-primary { color: #fff; background: linear-gradient(135deg, #8058eb, #6038cb); box-shadow: 0 7px 15px #7048df30; }
+    .btn-primary:hover { box-shadow: 0 10px 20px #7048df40; }
+    .btn-secondary { color: #6c52b5; background: #f0ebff; }
+    .btn-plain { color: var(--muted); background: #f5f3fa; }
+    .btn-danger { color: #fff; background: var(--danger); }
+    .btn svg { width: 17px; height: 17px; }
+    .toolbar { display: flex; gap: 12px; margin-bottom: 15px; }
+    .search-wrap { position: relative; flex: 1; min-width: 0; }
+    .search-wrap svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #978caf; pointer-events: none; }
+    .search-input { width: 100%; height: 47px; padding: 0 15px 0 44px; border: 1px solid var(--line); outline: none; border-radius: 13px; color: var(--ink); background: #fff; font-size: 13px; transition: border .2s, box-shadow .2s; }
+    .search-input:focus, .field input:focus, .field textarea:focus, .sort-select:focus { border-color: #a58bf4; box-shadow: 0 0 0 4px #8258e817; }
+    .sort-select { width: 180px; border: 1px solid var(--line); outline: none; border-radius: 13px; padding: 0 13px; background: #fff; color: #5d5377; font-size: 12px; }
+    .table-card { overflow: hidden; background: #fff; border: 1px solid #eee8fa; border-radius: 20px; box-shadow: var(--shadow); transition: box-shadow .25s ease, border-color .25s ease; }\n    .table-card:hover { border-color: #e0d6fa; box-shadow: 0 18px 48px rgba(73, 45, 139, .11); }
+    .table-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 21px; border-bottom: 1px solid #f0ecf8; }
+    .table-top strong { font-size: 13px; font-weight: 600; }
+    .result-count { color: #8c83a5; font-size: 11px; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 690px; }
+    thead { background: #faf8ff; }
+    th { padding: 14px 20px; color: #877c9e; font-size: 11px; font-weight: 500; white-space: nowrap; }
+    td { padding: 16px 20px; border-top: 1px solid #f2eef9; vertical-align: middle; font-size: 12px; }
+    tbody tr { transition: background .2s; animation: rowReveal .28s both; }
+    tbody tr:hover { background: #fcfaff; }
+    .game-name { display: flex; align-items: center; gap: 11px; min-width: 190px; }
+    .game-avatar { width: 39px; height: 39px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; color: #fff; font-family: "Kanit", sans-serif; font-size: 17px; font-weight: 500; background: linear-gradient(145deg, #b49cff, #6f49d5); box-shadow: inset 0 1px 0 #ffffff65, 0 4px 10px #7048df20; transition: transform .22s ease, border-radius .22s ease; }
+    tbody tr:hover .game-avatar { transform: rotate(-5deg) scale(1.06); border-radius: 15px 10px 15px 10px; }
+    .game-title { color: #302448; font-weight: 500; font-size: 13px; overflow-wrap: anywhere; }
+    .game-subtitle { color: #a29ab3; font-size: 10px; margin-top: 3px; }
+    .cell-text { color: #827a96; max-width: 260px; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .cell-muted { color: #b2aabe; font-style: italic; }
+    .actions { display: flex; align-items: center; gap: 7px; }
+    .icon-btn { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #eae3f8; border-radius: 10px; background: #fff; color: #8268c4; transition: all .18s; }
+    .icon-btn:hover { background: #f0eaff; border-color: #d6c7ff; transform: translateY(-1px); }
+    .icon-btn.delete { color: #dc6381; }
+    .icon-btn.delete:hover { background: #fff0f3; border-color: #ffd4de; }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .empty-state { padding: 55px 20px 60px; text-align: center; }
+    .empty-illustration { width: 76px; height: 76px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 25px; color: #8b69e8; background: linear-gradient(145deg, #f1ebff, #e5dcff); }
+    .empty-illustration svg { width: 35px; height: 35px; }
+    .empty-state h3 { margin: 0 0 7px; font-family: "Kanit", sans-serif; font-size: 19px; font-weight: 500; }
+    .empty-state p { margin: 0 0 20px; color: #978eaa; font-size: 12px; }
+    .footer { text-align: center; color: #a69db8; font-size: 10px; padding: 25px 0 0; }
+    .footer span { color: #8060d7; }
+    .modal-backdrop { position: fixed; z-index: 20; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; background: #21133f72; backdrop-filter: blur(5px); }
+    .modal-backdrop.show { display: flex; animation: fadeIn .18s ease; }
+    .modal { width: min(100%, 520px); max-height: min(90vh, 760px); overflow-y: auto; border-radius: 23px; background: #fff; box-shadow: 0 24px 80px #1b103c42; animation: riseIn .22s ease; }
+    .modal-head { display: flex; align-items: start; justify-content: space-between; gap: 15px; padding: 24px 25px 18px; border-bottom: 1px solid #f0ebf8; }
+    .modal-head h2 { margin: 0; font-family: "Kanit", sans-serif; font-size: 22px; font-weight: 600; }
+    .modal-head p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+    .close-btn { border: 0; background: #f4f0fc; color: #78669c; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+    .close-btn svg { width: 17px; height: 17px; }
+    .modal-body { padding: 21px 25px 25px; }
+    .field { margin-bottom: 17px; }
+    .field label { display: block; color: #4b3c68; font-size: 12px; font-weight: 500; margin-bottom: 7px; }
+    .required { color: #dc6381; }
+    .field input, .field textarea { width: 100%; border: 1px solid #e6def4; border-radius: 12px; padding: 12px 13px; color: var(--ink); background: #fdfcff; outline: none; font-size: 12px; transition: border .2s, box-shadow .2s; }
+    .field input { height: 45px; }
+    .field textarea { resize: vertical; min-height: 90px; line-height: 1.7; }
+    .field input::placeholder, .field textarea::placeholder { color: #b6adc8; }
+    .field-error { display: none; color: #d84265; font-size: 11px; margin-top: 6px; }
+    .field-error.show { display: block; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 23px; }
+    .confirm-body { padding: 24px 25px 25px; }
+    .confirm-body p { color: #786e8c; font-size: 13px; line-height: 1.8; margin: 0; }
+    .confirm-name { color: #4f2aa8; font-weight: 600; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+    .toast { position: fixed; z-index: 40; right: 24px; bottom: 24px; display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 13px 17px; border: 1px solid #dcd1fb; border-radius: 14px; background: #fff; box-shadow: 0 12px 35px #38206422; color: #49336f; font-size: 12px; opacity: 0; transform: translateY(15px); pointer-events: none; transition: .25s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast-icon { width: 23px; height: 23px; display: grid; place-items: center; border-radius: 50%; background: #e4f8ed; color: #1b9a5e; font-weight: 700; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }\n    @keyframes rowReveal { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes gentleFloat { 0%, 100% { transform: rotate(8deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-5px); } }
+    @keyframes orbitDrift { from { transform: translate(0, 0); } to { transform: translate(-13px, 8px); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+    @keyframes riseIn { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @media (max-width: 700px) {
+      .app-shell { padding: 18px 14px 35px; }
+      .topbar { margin-bottom: 20px; }
+      .top-pill { padding: 8px 10px; font-size: 10px; }
+      .brand-icon { width: 45px; height: 45px; border-radius: 14px; }
+      .brand p { font-size: 10px; }
+      .hero { padding: 25px 22px; min-height: 170px; border-radius: 22px; }
+      .hero-art { width: 78px; height: 78px; margin-right: 0; border-radius: 24px; }
+      .hero-art svg { width: 48px; height: 48px; }
+      .hero p { font-size: 11px; }
+      .stats-row { gap: 9px; margin: 14px 0 22px; }
+      .stat-card { display: block; padding: 12px; border-radius: 15px; }
+      .stat-icon { width: 34px; height: 34px; margin-bottom: 9px; border-radius: 11px; }
+      .stat-icon svg { width: 18px; height: 18px; }
+      .stat-label { font-size: 10px; }
+      .stat-number { font-size: 22px; }
+      .section-head { align-items: center; }
+      .section-head h2 { font-size: 20px; }
+      .section-head p { font-size: 10px; }
+      .section-head .btn { padding: 10px 12px; font-size: 11px; }
+      .toolbar { gap: 8px; }
+      .sort-select { width: 125px; font-size: 10px; padding: 0 7px; }
+      .search-input { font-size: 11px; padding-left: 38px; }
+      .search-wrap svg { left: 12px; }
+      .table-card { border-radius: 16px; }
+      .table-top { padding: 14px 15px; }
+      .modal-head, .modal-body, .confirm-body { padding-left: 19px; padding-right: 19px; }
+      .toast { right: 16px; bottom: 16px; }
+    }
+    @media (max-width: 390px) {
+      .top-pill { display: none; }
+      .hero-art { width: 60px; height: 60px; border-radius: 18px; }
+      .hero-art svg { width: 38px; height: 38px; }
+      .hero { padding: 21px 17px; gap: 10px; }
+      .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat-card { padding: 10px 8px; }
+      .stat-number { font-size: 20px; }
+      .sort-select { width: 112px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8h11a4.5 4.5 0 0 1 4.4 5.4l-.6 2.8a2.8 2.8 0 0 1-4.6 1.5L14.5 16h-5l-2.2 1.7a2.8 2.8 0 0 1-4.6-1.5l-.6-2.8A4.5 4.5 0 0 1 6.5 8Z"/><path d="M7.5 11v4M5.5 13h4M16.5 12h.01M18.5 14h.01"/></svg>
+        </div>
+        <div>
+          <h1>My Game Library</h1>
+          <p>คลังเกมส่วนตัวของคุณ จัดเก็บทุกเกมที่ชอบ</p>
+        </div>
+      </div>
+      <div class="top-pill"><span class="dot"></span> บันทึกข้อมูลในอุปกรณ์นี้</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>✦</span> YOUR PERSONAL COLLECTION</div>
+        <h2>ทุกเกมที่คุณรัก<br>อยู่ในที่เดียวกัน</h2>
+        <p>จดจำเกมโปรด เก็บรายละเอียดสำคัญ และกลับมาค้นหาได้ทุกเมื่อ</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 80 80" fill="none"><path d="M22 25h36c8 0 13 6 15 14l4 17c2 9-7 14-14 8L52 54H28L17 64C10 70 1 65 3 56l4-17c2-8 7-14 15-14Z" fill="#fff" fill-opacity=".94"/><path d="M25 35v14M18 42h14" stroke="#7048D8" stroke-width="5" stroke-linecap="round"/><circle cx="55" cy="38" r="3.5" fill="#7048D8"/><circle cx="64" cy="46" r="3.5" fill="#7048D8"/></svg>
+      </div>
+    </section>
+
+    <section class="stats-row" aria-label="สถิติคลังเกม">
+      <div class="stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 4V2m8 2V2M7 9h10M7 13h4"/></svg></div>
+        <div><div class="stat-label">เกมทั้งหมด</div><div class="stat-number" id="totalCount">0</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></div>
+        <div><div class="stat-label">ผลการค้นหา</div><div class="stat-number" id="visibleCount">0</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18m9-9H3"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <div><div class="stat-label">เพิ่มเกมได้</div><div class="stat-number">∞</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><h2>รายชื่อเกม</h2><p>จัดการรายชื่อเกมและรายละเอียดได้ตามต้องการ</p></div>
+        <button class="btn btn-primary" id="addGameBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          เพิ่มเกม
+        </button>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input class="search-input" id="searchInput" type="search" placeholder="ค้นหาเกมที่คุณบันทึกไว้..." aria-label="ค้นหาเกม">
+        </div>
+        <select class="sort-select" id="sortSelect" aria-label="เรียงลำดับเกม">
+          <option value="newest">เพิ่มล่าสุดก่อน</option>
+          <option value="oldest">เพิ่มเก่าสุดก่อน</option>
+          <option value="az">ชื่อเกม ก - ฮ / A - Z</option>
+          <option value="za">ชื่อเกม ฮ - ก / Z - A</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <div class="table-top">
+          <strong>รายการเกม <span style="color:#8b6de0">✦</span></strong>
+          <span class="result-count" id="resultLabel">0 รายการ</span>
+        </div>
+        <div class="table-scroll" id="tableWrap">
+          <table>
+            <thead><tr><th style="width:28%">ชื่อเกม</th><th style="width:20%">หมายเหตุ</th><th>รายละเอียด</th><th style="width:110px">จัดการ</th></tr></thead>
+            <tbody id="gameTableBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="emptyState">
+          <div class="empty-illustration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8h11a4.5 4.5 0 0 1 4.4 5.4l-.6 2.8a2.8 2.8 0 0 1-4.6 1.5L14.5 16h-5l-2.2 1.7a2.8 2.8 0 0 1-4.6-1.5l-.6-2.8A4.5 4.5 0 0 1 6.5 8Z"/><path d="M7.5 11v4M5.5 13h4M16.5 12h.01M18.5 14h.01"/></svg></div>
+          <h3 id="emptyTitle">ยังไม่มีเกมในรายการ</h3>
+          <p id="emptyText">เริ่มเพิ่มเกมแรกของคุณได้เลย!</p>
+          <button class="btn btn-primary" id="emptyAddBtn">+ เพิ่มเกมแรก</button>
+        </div>
+      </div>
+    </section>
+    <footer class="footer">สร้างคลังเกมในแบบของคุณ <span>♥</span> ข้อมูลเก็บไว้ในเบราว์เซอร์เครื่องนี้</footer>
+  </main>
+
+  <div class="modal-backdrop" id="gameModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <div><h2 id="modalTitle">เพิ่มเกมใหม่</h2><p>กรอกรายละเอียดเกมที่คุณต้องการบันทึก</p></div>
+        <button class="close-btn" id="closeModalBtn" aria-label="ปิดหน้าต่าง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+      </div>
+      <form class="modal-body" id="gameForm" novalidate>
+        <div class="field">
+          <label for="gameName">ชื่อเกม <span class="required">*</span></label>
+          <input id="gameName" name="gameName" maxlength="120" placeholder="เช่น Elden Ring, Stardew Valley" autocomplete="off" required>
+          <div class="field-error" id="nameError">กรุณากรอกชื่อเกมก่อนบันทึก</div>
+        </div>
+        <div class="field">
+          <label for="gameNote">หมายเหตุ</label>
+          <input id="gameNote" name="gameNote" maxlength="180" placeholder="เช่น เล่นกับเพื่อน, เกมที่อยากลอง">
+        </div>
+        <div class="field">
+          <label for="gameDetails">รายละเอียด</label>
+          <textarea id="gameDetails" name="gameDetails" maxlength="3000" placeholder="ประเภทเกม เนื้อเรื่อง สิ่งที่อยากจำ หรือรายละเอียดเพิ่มเติม..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-plain" type="button" id="cancelModalBtn">ยกเลิก</button>
+          <button class="btn btn-primary" type="submit" id="saveGameBtn">บันทึกเกม</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-head">
+        <div><h2 id="deleteTitle">ยืนยันการลบเกม</h2><p>โปรดตรวจสอบก่อนดำเนินการ</p></div>
+        <button class="close-btn" id="closeDeleteBtn" aria-label="ปิดหน้าต่าง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+      </div>
+      <div class="confirm-body">
+        <p>คุณต้องการลบเกม <span class="confirm-name" id="deleteGameName"></span> ออกจากคลังใช่หรือไม่? การลบนี้ไม่สามารถย้อนกลับได้</p>
+        <div class="confirm-actions">
+          <button class="btn btn-plain" id="cancelDeleteBtn">ยกเลิก</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">ยืนยันการลบ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span class="toast-icon">✓</span><span id="toastMessage">บันทึกสำเร็จ</span></div>
+
+  <script>
+    (() => {
+      "use strict";
+      const STORAGE_KEY = "myGameLibrary.games.v1";
+      const $ = (selector) => document.querySelector(selector);
+      const tableBody = $("#gameTableBody");
+      const tableWrap = $("#tableWrap");
+      const emptyState = $("#emptyState");
+      const gameModal = $("#gameModal");
+      const deleteModal = $("#deleteModal");
+      const gameForm = $("#gameForm");
+      const nameInput = $("#gameName");
+      const noteInput = $("#gameNote");
+      const detailsInput = $("#gameDetails");
+      const searchInput = $("#searchInput");
+      const sortSelect = $("#sortSelect");
+
+      let games = loadGames();
+      let editingId = null;
+      let deletingId = null;
+      let toastTimer = null;
+
+      function loadGames() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          if (!Array.isArray(parsed)) return [];
+          return parsed.filter(g => g && typeof g.id === "string" && typeof g.name === "string")
+            .map(g => ({ id: g.id, name: g.name, note: String(g.note || ""), details: String(g.details || ""), createdAt: Number(g.createdAt) || Date.now(), updatedAt: Number(g.updatedAt) || Number(g.createdAt) || Date.now() }));
+        } catch (error) {
+          console.warn("ไม่สามารถอ่านข้อมูลคลังเกมได้:", error);
+          return [];
+        }
+      }
+
+      function persistGames() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+          return true;
+        } catch (error) {
+          showToast("บันทึกไม่สำเร็จ พื้นที่จัดเก็บอาจเต็ม", false);
+          console.error("ไม่สามารถบันทึกข้อมูลคลังเกมได้:", error);
+          return false;
+        }
+      }
+
+      function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      }
+
+      function initials(name) {
+        const clean = name.trim();
+        return Array.from(clean)[0] || "G";
+      }
+
+      function getVisibleGames() {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        const result = games.filter(game => game.name.toLocaleLowerCase().includes(query));
+        const sort = sortSelect.value;
+        result.sort((a, b) => {
+          if (sort === "oldest") return a.createdAt - b.createdAt;
+          if (sort === "az") return a.name.localeCompare(b.name, "th", { sensitivity: "base" });
+          if (sort === "za") return b.name.localeCompare(a.name, "th", { sensitivity: "base" });
+          return b.createdAt - a.createdAt;
+        });
+        return result;
+      }
+
+      function render() {
+        const visibleGames = getVisibleGames();
+        $("#totalCount").textContent = games.length;
+        $("#visibleCount").textContent = visibleGames.length;
+        $("#resultLabel").textContent = `${visibleGames.length} รายการ`;
+        tableBody.innerHTML = visibleGames.map(game => `
+          <tr>
+            <td><div class="game-name">
+              <div class="game-avatar">${escapeHTML(initials(game.name))}</div>
+              <div><div class="game-title">${escapeHTML(game.name)}</div><div class="game-subtitle">เพิ่มเมื่อ ${formatDate(game.createdAt)}</div></div>
+            </div></td>
+            <td><div class="cell-text ${game.note ? "" : "cell-muted"}">${game.note ? escapeHTML(game.note) : "ไม่มีหมายเหตุ"}</div></td>
+            <td><div class="cell-text ${game.details ? "" : "cell-muted"}">${game.details ? escapeHTML(game.details) : "ไม่มีรายละเอียด"}</div></td>
+            <td><div class="actions">
+              <button class="icon-btn" data-action="edit" data-id="${escapeHTML(game.id)}" aria-label="แก้ไข ${escapeHTML(game.name)}" title="แก้ไข">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+              </button>
+              <button class="icon-btn delete" data-action="delete" data-id="${escapeHTML(game.id)}" aria-label="ลบ ${escapeHTML(game.name)}" title="ลบ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>
+              </button>
+            </div></td>
+          </tr>`).join("");
+
+        const hasGames = visibleGames.length > 0;
+        tableWrap.style.display = hasGames ? "block" : "none";
+        emptyState.style.display = hasGames ? "none" : "block";
+        if (games.length === 0) {
+          $("#emptyTitle").textContent = "ยังไม่มีเกมในรายการ";
+          $("#emptyText").textContent = "เริ่มเพิ่มเกมแรกของคุณได้เลย!";
+          $("#emptyAddBtn").style.display = "inline-flex";
+        } else if (visibleGames.length === 0) {
+          $("#emptyTitle").textContent = "ไม่พบเกมที่ค้นหา";
+          $("#emptyText").textContent = "ลองเปลี่ยนคำค้นหา แล้วค้นหาอีกครั้ง";
+          $("#emptyAddBtn").style.display = "none";
+        }
+      }
+
+      function formatDate(timestamp) {
+        try {
+          return new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "2-digit" }).format(new Date(timestamp));
+        } catch (_) { return ""; }
+      }
+
+      function showToast(message, success = true) {
+        const toast = $("#toast");
+        toast.querySelector(".toast-icon").textContent = success ? "✓" : "!";
+        toast.querySelector(".toast-icon").style.background = success ? "#e4f8ed" : "#fff0e2";
+        toast.querySelector(".toast-icon").style.color = success ? "#1b9a5e" : "#c66a21";
+        $("#toastMessage").textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      function openGameModal(game = null) {
+        editingId = game ? game.id : null;
+        $("#modalTitle").textContent = game ? "แก้ไขข้อมูลเกม" : "เพิ่มเกมใหม่";
+        $("#saveGameBtn").textContent = game ? "บันทึกการแก้ไข" : "บันทึกเกม";
+        nameInput.value = game ? game.name : "";
+        noteInput.value = game ? game.note : "";
+        detailsInput.value = game ? game.details : "";
+        $("#nameError").classList.remove("show");
+        gameModal.classList.add("show");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => nameInput.focus(), 100);
+      }
+
+      function closeGameModal() {
+        gameModal.classList.remove("show");
+        document.body.style.overflow = deleteModal.classList.contains("show") ? "hidden" : "";
+        gameForm.reset();
+        editingId = null;
+      }
+
+      function openDeleteModal(game) {
+        deletingId = game.id;
+        $("#deleteGameName").textContent = `“${game.name}”`;
+        deleteModal.classList.add("show");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeDeleteModal() {
+        deleteModal.classList.remove("show");
+        document.body.style.overflow = gameModal.classList.contains("show") ? "hidden" : "";
+        deletingId = null;
+      }
+
+      $("#addGameBtn").addEventListener("click", () => openGameModal());
+      $("#emptyAddBtn").addEventListener("click", () => openGameModal());
+      $("#closeModalBtn").addEventListener("click", closeGameModal);
+      $("#cancelModalBtn").addEventListener("click", closeGameModal);
+      $("#closeDeleteBtn").addEventListener("click", closeDeleteModal);
+      $("#cancelDeleteBtn").addEventListener("click", closeDeleteModal);
+      searchInput.addEventListener("input", render);
+      sortSelect.addEventListener("change", render);
+
+      gameForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const name = nameInput.value.trim();
+        if (!name) {
+          $("#nameError").classList.add("show");
+          nameInput.focus();
+          return;
+        }
+        $("#nameError").classList.remove("show");
+        const now = Date.now();
+        if (editingId) {
+          const index = games.findIndex(game => game.id === editingId);
+          if (index < 0) return closeGameModal();
+          const old = games[index];
+          games[index] = { ...old, name, note: noteInput.value.trim(), details: detailsInput.value.trim(), updatedAt: now };
+          if (!persistGames()) return;
+          closeGameModal();
+          render();
+          showToast("แก้ไขข้อมูลเกมเรียบร้อยแล้ว");
+        } else {
+          const game = { id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${now}-${Math.random().toString(36).slice(2)}`, name, note: noteInput.value.trim(), details: detailsInput.value.trim(), createdAt: now, updatedAt: now };
+          games.unshift(game);
+          if (!persistGames()) { games.shift(); return; }
+          closeGameModal();
+          render();
+          showToast("เพิ่มเกมใหม่เรียบร้อยแล้ว");
+        }
+      });
+
+      nameInput.addEventListener("input", () => {
+        if (nameInput.value.trim()) $("#nameError").classList.remove("show");
+      });
+
+      tableBody.addEventListener("click", event => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const game = games.find(item => item.id === button.dataset.id);
+        if (!game) return;
+        if (button.dataset.action === "edit") openGameModal(game);
+        if (button.dataset.action === "delete") openDeleteModal(game);
+      });
+
+      $("#confirmDeleteBtn").addEventListener("click", () => {
+        if (!deletingId) return;
+        const oldGames = games;
+        games = games.filter(game => game.id !== deletingId);
+        if (!persistGames()) { games = oldGames; return; }
+        closeDeleteModal();
+        render();
+        showToast("ลบเกมออกจากรายการแล้ว");
+      });
+
+      [gameModal, deleteModal].forEach(modal => {
+        modal.addEventListener("click", event => {
+          if (event.target === modal) {
+            if (modal === gameModal) closeGameModal();
+            else closeDeleteModal();
+          }
+        });
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          if (deleteModal.classList.contains("show")) closeDeleteModal();
+          else if (gameModal.classList.contains("show")) closeGameModal();
+        }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
